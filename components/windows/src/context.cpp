@@ -87,6 +87,12 @@ WindowsPlatformContext::WindowsPlatformContext(HINSTANCE hInstance, HINSTANCE hP
 	_temp_directory             = get_temp_path_from_environment();
 	_arguments                  = get_args();
 
+	// #VC_BEGIN: We use /subsystem:console under windows, therefore no need to handle console manually.
+#ifdef _WIN32
+	return;
+#endif
+	// #VC_END
+
 	// Attempt to attach to the parent process console if it exists
 	if (!AttachConsole(ATTACH_PARENT_PROCESS))
 	{

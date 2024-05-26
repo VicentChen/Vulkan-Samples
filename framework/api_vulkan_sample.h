@@ -18,7 +18,10 @@
 #pragma once
 
 #ifdef _WIN32
-#	pragma comment(linker, "/subsystem:windows")
+// #VC_BEGIN: Change to console, to log output in JetBrains's embedded console.
+// #	pragma comment(linker, "/subsystem:windows")
+#	pragma comment(linker, "/subsystem:console")
+// #VC_END
 #	include <ShellScalingAPI.h>
 #	include <fcntl.h>
 #	include <io.h>

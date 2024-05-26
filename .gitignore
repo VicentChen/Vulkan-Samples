@@ -14,3 +14,8 @@ tags
 *~
 .*.sw*
 .sw*
+
+# Modified for project wings
+cmake-build-debug
+cmake-build-release
+.idea
