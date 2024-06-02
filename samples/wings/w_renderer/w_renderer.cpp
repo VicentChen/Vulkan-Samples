@@ -9,6 +9,12 @@
 #include "rendering/subpasses/forward_subpass.h"
 #include "stats/stats.h"
 
+static const std::vector<std::string>& shading_models = {
+    "wings/Gooch",
+    "wings/phong",
+    "base",
+};
+
 WRenderer::WRenderer()
 {
 	// Extension of interest in this sample (optional)
@@ -21,6 +27,8 @@ WRenderer::WRenderer()
 	add_device_extension(VK_KHR_MULTIVIEW_EXTENSION_NAME, true);
 
 	auto &config = get_configuration();
+
+	shading_model = shading_models[0];
 }
 
 bool WRenderer::prepare(const vkb::ApplicationOptions &options)
@@ -36,12 +44,7 @@ bool WRenderer::prepare(const vkb::ApplicationOptions &options)
 	auto &camera_node = vkb::add_free_camera(get_scene(), "main_camera", get_render_context().get_surface_extent());
 	camera            = dynamic_cast<vkb::sg::PerspectiveCamera *>(&camera_node.get_component<vkb::sg::Camera>());
 
-	vkb::ShaderSource scene_vs("wings/phong.vert");
-	vkb::ShaderSource scene_fs("wings/phong.frag");
-	auto              scene_subpass = std::make_unique<vkb::ForwardSubpass>(get_render_context(), std::move(scene_vs), std::move(scene_fs), get_scene(), *camera);
-	scene_pipeline                  = std::make_unique<vkb::RenderPipeline>();
-	scene_pipeline->add_subpass(std::move(scene_subpass));
-
+	update_scene_subpass();
 	update_pipelines();
 
 	get_stats().request_stats({vkb::StatIndex::frame_times,
@@ -101,17 +104,23 @@ void WRenderer::update(float delta_time)
 {
 //	update_pipelines(); // Only update when required.
 	if (refresh_shader){
-		vkb::ShaderSource scene_vs("wings/phong.vert");
-		vkb::ShaderSource scene_fs("wings/phong.frag");
-		auto              scene_subpass = std::make_unique<vkb::ForwardSubpass>(get_render_context(), std::move(scene_vs), std::move(scene_fs), get_scene(), *camera);
-		scene_pipeline                  = std::make_unique<vkb::RenderPipeline>();
-		scene_pipeline->add_subpass(std::move(scene_subpass));
-		update_pipelines();
+		update_scene_subpass();
 
 		refresh_shader = false;
 	}
 
 	VulkanSample::update(delta_time);
+}
+
+void WRenderer::update_scene_subpass()
+{
+	vkb::ShaderSource scene_vs(shading_model + ".vert");
+	vkb::ShaderSource scene_fs(shading_model + ".frag");
+	auto              scene_subpass = std::make_unique<vkb::ForwardSubpass>(get_render_context(), std::move(scene_vs), std::move(scene_fs), get_scene(), *camera);
+	scene_pipeline                  = std::make_unique<vkb::RenderPipeline>();
+	scene_pipeline->add_subpass(std::move(scene_subpass));
+
+	update_pipelines();
 }
 
 void WRenderer::update_pipelines()
@@ -242,6 +251,23 @@ void WRenderer::draw_gui()
 		if (ImGui::Button("Refresh shader")) {
 			this->refresh_shader = true;
 			LOGW("Refresh shader");
+		}
+
+		if (ImGui::BeginCombo("Shading Model", shading_models[0].c_str())) {
+			for (const std::string& curr_model : shading_models)
+			{
+				bool is_selected = shading_model == curr_model;
+				if (ImGui::Selectable(curr_model.c_str(), is_selected))
+				{
+					shading_model = curr_model;
+					this->refresh_shader = true;
+				}
+				if (is_selected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
 		}
 	});
 }

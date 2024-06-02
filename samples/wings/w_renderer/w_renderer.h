@@ -33,6 +33,8 @@ class WRenderer : public vkb::VulkanSample<vkb::BindingType::C>
 	 */
 	std::unique_ptr<vkb::RenderPipeline> scene_pipeline{};
 
+	void update_scene_subpass();
+
 	/**
 	 * @brief Update MSAA options and accordingly set the load/store
 	 *        attachment operations for the renderpasses
@@ -78,6 +80,8 @@ class WRenderer : public vkb::VulkanSample<vkb::BindingType::C>
 	std::vector<vkb::LoadStoreInfo> scene_load_store{};
 
 	bool refresh_shader = false;
+
+	std::string shading_model;
 };
 
 std::unique_ptr<vkb::VulkanSample<vkb::BindingType::C>> create_w_renderer();
