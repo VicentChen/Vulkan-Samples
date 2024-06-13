@@ -958,6 +958,10 @@ inline bool VulkanSample<bindingType>::prepare(const ApplicationOptions &options
 	// initialize C++-Bindings default dispatcher, first step
 #if TARGET_OS_IPHONE
     static vk::DynamicLoader dl("vulkan.framework/vulkan");
+// #VC_BEGIN: Fix cannot load vulkan library in mac.
+#elif TARGET_OS_MAC
+	static vk::DynamicLoader dl("/usr/local/lib/libvulkan.dylib");
+// #VC_END
 #else
 	static vk::DynamicLoader dl;
 #endif
